@@ -109,3 +109,69 @@ class AutoModelMixin(GetAbsoluteUrlMixin):
         else:
             raise ValueError('The view name "%s" is unknown.' % view_name)
         return type(view_name, (view_class,), view_class_definitions)
+
+
+class ExtraFormField:
+    """
+    Base class for extra form fields for models.
+
+    Add a classmethod get_extra_form_fields to your model. This method should
+    return a list of customized ExtraFormField instances. You can define them
+    within the namespace of the classmethod. If you do so, you can use a
+    CreateView and an UpdateView containing the extra form fields.
+
+    Example:
+
+    import django
+    import ophrys
+
+
+    class MyModel(django.db.models.Model)
+        # Define your fields and other methods here.
+
+        @classmethod
+        def get_extra_form_fields(cls):
+            class MyExtraFormField(ophrys.utils.models.ExtraFormField):
+                name = 'extra_field_1'
+                form_field = django.forms.CharField()
+
+                def process_field(self, instance, value):
+                    print('The User entered %s to the extra field %s' % value, self.name)
+
+            return [MyExtraFormField(),]
+
+
+    my_create_view = ophrys.utils.views.CreateView(model=MyModel)  # The view contains the extra form field now.
+    """
+    name = None
+    form_field = None
+    initial = None
+
+    def get_name(self):
+        """
+        Returns the name of the extra form field.
+        """
+        if not self.name:
+            raise NotImplementedError('You either have to provide a name or define a get_name method on your ExtraFormField class.')
+        return self.name
+
+    def get_form_field(self):
+        """
+        Returns the form field class of the extra form field.
+        """
+        if not self.form_field:
+            raise NotImplementedError('You either have to provide a form_field or define a get_form_field method on your ExtraFormField class.')
+        return self.form_field
+
+    def get_initial(self, instance):
+        """
+        Returns the initial value for the extra form field. In a CreateView
+        instance is None, in an UpdateView it is not None.
+        """
+        return self.initial
+
+    def process_field(self, instance, value):
+        """
+        This method is called when the view processes the valid form.
+        """
+        raise NotImplementedError("You have to define what should happen with the field's value if the form is valid.")
