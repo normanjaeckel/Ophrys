@@ -5,6 +5,7 @@ from django.test.client import Client
 from django.utils.timezone import now, utc
 
 from ophrys.calendarevent.models import Event
+from ophrys.core.models import Tag
 
 
 class CalendarTest(TestCase):
@@ -72,3 +73,35 @@ class EventTest(TestCase):
         response = self.client.post('/calendar/event/1/delete/')
         self.assertRedirects(response, '/calendar/event/')
         self.assertFalse(Event.objects.filter(title='ohW9eidie7Uatoot9eem').exists())
+
+    def test_create_with_tags(self):
+        tag = Tag.objects.create(name='Ohpaiyae3weingeiThai')
+        response = self.client.post('/calendar/event/create/',
+                                    {'title': 'amihaeseiMoh1ieTaiwa',
+                                     'begin': now().strftime('%Y-%m-%d %H:%M'),
+                                     'tags': 'amihaeseiMoh1ieTaiwa Ohpaiyae3weingeiThai'})
+        self.assertRedirects(response, '/calendar/event/1/')
+        event = Event.objects.get(title='amihaeseiMoh1ieTaiwa')
+        self.assertTrue(tag in event.get_tags())
+        self.assertTrue(Tag.objects.get(name='amihaeseiMoh1ieTaiwa') in event.get_tags())
+        self.assertEqual(Tag.objects.all().count(), 2)
+
+    def test_update_with_tags(self):
+        tag_1 = Tag.objects.create(name='voa8TeiYaixiepohsh8o')
+        tag_2 = Tag.objects.create(name='eeFaithohw6Vie7Ubuma')
+        tag_3 = Tag.objects.create(name='chie6Ailaenoh1Loh6ae')
+        event = Event.objects.create(title='Phahzuojie7ene9hei2U', begin=now())
+        event.add_tag(tag_1)
+        event.add_tag(tag_2)
+        self.assertTrue(tag_1 in event.get_tags())
+        self.assertTrue(tag_2 in event.get_tags())
+        self.assertFalse(tag_3 in event.get_tags())
+        response = self.client.post('/calendar/event/1/update/',
+                                    {'title': 'Ofaiphiqu0eeHeeheich',
+                                     'begin': now().strftime('%Y-%m-%d %H:%M'),
+                                     'tags': 'eeFaithohw6Vie7Ubuma chie6Ailaenoh1Loh6ae'})
+        self.assertRedirects(response, '/calendar/event/1/')
+        event = Event.objects.get(title='Ofaiphiqu0eeHeeheich')
+        self.assertFalse(tag_1 in event.get_tags())
+        self.assertTrue(tag_2 in event.get_tags())
+        self.assertTrue(tag_3 in event.get_tags())

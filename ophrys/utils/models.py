@@ -136,9 +136,9 @@ class ExtraFormField:
                 form_field = django.forms.CharField()
 
                 def process_field(self, instance, value):
-                    print('The User entered %s to the extra field %s' % value, self.name)
+                    print('The User entered %s to the extra field %s' % (value, self.name))
 
-            return [MyExtraFormField(),]
+            return (MyExtraFormField(),)
 
 
     my_create_view = ophrys.utils.views.CreateView(model=MyModel)  # The view contains the extra form field now.

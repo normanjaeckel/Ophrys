@@ -71,3 +71,18 @@ class TaggedModel(models.Model):
         if isinstance(tag, str):
             tag, created = Tag.objects.get_or_create(name=tag)
         TagConnection.objects.create(tag=tag, content_object=self)
+
+    def remove_tag(self, tag):
+        """
+        Method to remove a tag from an instance of this model. Returns True if
+        the operation succeeds, else False.
+        """
+        if isinstance(tag, str):
+            try:
+                tag = Tag.objects.get(name=tag)
+            except Tag.DoesNotExist:
+                return False
+        if tag in self.get_tags():
+            self.tag_connections.filter(tag=tag).delete()
+            return True
+        return False

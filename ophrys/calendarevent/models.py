@@ -1,10 +1,11 @@
 import datetime
 
+from django import forms
 from django.db import models
 from django.utils.translation import ugettext_lazy
 
 from ophrys.core.models import TaggedModel
-from ophrys.utils.models import AutoModelMixin
+from ophrys.utils.models import AutoModelMixin, ExtraFormField
 
 
 class Event(AutoModelMixin, TaggedModel):
@@ -44,3 +45,24 @@ class Event(AutoModelMixin, TaggedModel):
         """
         if self.duration:
             return self.begin + datetime.timedelta(minutes=self.duration)
+
+    @classmethod
+    def get_extra_form_fields(cls):
+        class TagExtraFormField(ExtraFormField):
+            name = 'tags'
+            form_field = forms.CharField(required=False)
+
+            def process_field(self, instance, value):
+                tag_list = value.split()
+                # TODO: Ensure, that tags are not doppelt.
+                for tag in instance.get_tags():
+                    for tag_name in tag_list:
+                        if tag.name == tag_name:
+                            tag_list.remove(tag_name)
+                            break
+                    else:
+                        instance.remove_tag(tag)
+                for tag_name in tag_list:
+                    instance.add_tag(tag_name)
+
+        return (TagExtraFormField(),)

@@ -13,6 +13,28 @@ class TestTag(TestCase):
         event.add_tag('oxgath4VohheeYahxeiW')
         self.assertTrue(Tag.objects.get(name='oxgath4VohheeYahxeiW') in event.get_tags())
 
+    def test_remove_tag(self):
+        event = Event.objects.create(title='yie2reejei6uCaesaiya', begin=now())
+        event.add_tag('Epah1ait2eiGh0wahgol')
+        self.assertTrue(event.remove_tag('Epah1ait2eiGh0wahgol'))
+        self.assertFalse(list(event.get_tags()))
+
+    def test_remove_tag_via_model(self):
+        event = Event.objects.create(title='toh0Ipheephohg0oghoo', begin=now())
+        tag = Tag.objects.create(name='ehai5ahseem4Choh8ize')
+        event.add_tag(tag)
+        self.assertTrue(event.remove_tag(tag))
+        self.assertFalse(list(event.get_tags()))
+
+    def test_remove_unexisting_tag(self):
+        event = Event.objects.create(title='feixu2iChaH4veiwoh5o', begin=now())
+        self.assertFalse(event.remove_tag('aiPh8leneibaineeD3Ne'))
+
+    def test_remove_unexisting_model_tag(self):
+        event = Event.objects.create(title='aequ7It1oLoow7bou2na', begin=now())
+        tag = Tag.objects.create(name='ioMa2eih4xeizux1umah')
+        self.assertFalse(event.remove_tag(tag))
+
 
 class TestEvent(TestCase):
     def setUp(self):
